@@ -7,7 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Set theme on page load to prevent FOUC (Flash of Unstyled Content)
+        // --- Tailwind CSS Dark Mode Configuration ---
+        // This script must run before the main Tailwind script to configure it properly.
+        tailwind.config = {
+          darkMode: 'class', // This enables the class-based dark mode.
+        }
+
+        // --- Theme Application on Load ---
+        // This script sets the theme on initial page load to prevent flashing.
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -47,8 +54,7 @@
             border-top-color: #4B5563; /* gray-600 */
         }
         .dark .arrow-right {
-            /* By setting the full border property, we ensure it overrides the base style correctly. */
-            border-left: 20px solid #4B5563; /* gray-600 */
+            border-left-color: #4B5563; /* gray-600 */
         }
         /* Style for the active theme button */
         .theme-btn-active {
@@ -86,10 +92,10 @@
         </header>
 
         <!-- Infographic Flow Section -->
-        <div class="flex flex-col xl:flex-row items-stretch justify-center gap-y-8 xl:gap-x-6">
+        <div class="flex flex-col items-center gap-y-8 lg:grid lg:grid-cols-3 lg:gap-8 lg:max-w-4xl lg:mx-auto xl:flex xl:flex-row xl:max-w-none">
 
             <!-- Step 1: The User & The Idea -->
-            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full mx-auto max-w-sm">
+            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full max-w-sm">
                 <div class="flex-shrink-0">
                     <div class="flex items-center justify-center bg-blue-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -100,13 +106,13 @@
             </div>
 
             <!-- Arrow Connector -->
-            <div class="flex items-center justify-center">
-                <div class="arrow arrow-down xl:hidden"></div>
+            <div class="flex items-center justify-center lg:hidden xl:flex">
+                <div class="arrow arrow-down lg:hidden"></div>
                 <div class="hidden xl:block arrow arrow-right"></div>
             </div>
 
             <!-- Step 2: Gemini Canvas -->
-            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full mx-auto max-w-sm">
+            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full max-w-sm">
                  <div class="flex-shrink-0">
                     <div class="flex items-center justify-center bg-purple-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4">
                         <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-gemini-icon.png" alt="Gemini Logo" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/40x40/E9D5FF/6B21A8?text=G';">
@@ -117,13 +123,13 @@
             </div>
             
             <!-- Arrow Connector -->
-            <div class="flex items-center justify-center">
-                <div class="arrow arrow-down xl:hidden"></div>
+            <div class="flex items-center justify-center lg:hidden xl:flex">
+                <div class="arrow arrow-down lg:hidden"></div>
                 <div class="hidden xl:block arrow arrow-right"></div>
             </div>
 
             <!-- Step 3: Setup GitHub Pages -->
-            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full mx-auto max-w-sm">
+            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full max-w-sm">
                  <div class="flex-shrink-0">
                     <div class="flex items-center justify-center bg-yellow-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-600 dark:text-yellow-400"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15-.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -134,13 +140,13 @@
             </div>
 
             <!-- Arrow Connector -->
-            <div class="flex items-center justify-center">
-                <div class="arrow arrow-down xl:hidden"></div>
-                <div class="hidden xl:block arrow arrow-right"></div>
+            <div class="flex items-center justify-center lg:hidden xl:flex col-start-2">
+                 <div class="arrow arrow-down lg:hidden"></div>
+                 <div class="hidden xl:block arrow arrow-right"></div>
             </div>
 
             <!-- Step 4: GitHub -->
-            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full mx-auto max-w-sm">
+            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full max-w-sm lg:col-start-1 xl:col-start-auto">
                  <div class="flex-shrink-0">
                     <div class="flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4">
                         <img src="https://images.seeklogo.com/logo-png/30/2/github-logo-png_seeklogo-304612.png" alt="GitHub Logo" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/40x40/E5E7EB/1F2937?text=GH';">
@@ -151,13 +157,13 @@
             </div>
             
             <!-- Arrow Connector -->
-            <div class="flex items-center justify-center">
-                <div class="arrow arrow-down xl:hidden"></div>
+            <div class="flex items-center justify-center lg:hidden xl:flex">
+                <div class="arrow arrow-down lg:hidden"></div>
                 <div class="hidden xl:block arrow arrow-right"></div>
             </div>
 
             <!-- Step 5: Deployed Page -->
-            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full mx-auto max-w-sm">
+            <div class="step-card flex flex-col text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 w-full max-w-sm">
                 <div class="flex-shrink-0">
                     <div class="flex items-center justify-center bg-green-100 dark:bg-gray-700 rounded-full w-16 h-16 mx-auto mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600 dark:text-green-400"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
