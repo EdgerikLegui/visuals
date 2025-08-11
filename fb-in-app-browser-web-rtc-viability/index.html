@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Analysis: WebRTC in Facebook's Browser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is structured as a top-down narrative designed for quick comprehension and deep exploration. It begins with the final verdict for immediate clarity. It then presents the core conceptual conflict between IABs and WebRTC. The main interactive section is a platform-switcher (iOS/Android) that dynamically displays the specific technical limitations and architectural diagrams for the selected OS. This is more effective than a linear report as it allows users to directly compare platforms and focus on the environment most relevant to them. The narrative concludes with the strategic "why" behind Meta's decisions and the universally accepted "Detect & Redirect" solution, providing actionable takeaways. This structure prioritizes user-driven discovery over passive reading. -->
+    <!-- Visualization & Content Choices: The report is qualitative, so traditional charts are unsuitable. Instead, information is visualized through interactive diagrams and text blocks built with HTML/CSS and JS. For iOS, a CSS animation simulates the "Permissions Nightmare" (Goal: Inform, Method: HTML/CSS Animation) and a flexbox diagram shows the AVAudioSession conflict (Goal: Organize, Method: HTML/CSS). For Android, a diagram illustrates the broken permission chain (Goal: Organize, Method: HTML/CSS). User-Agent strings are presented in styled blocks for clarity (Goal: Inform, Method: Styled HTML). The primary interaction is a platform toggle that controls content visibility (Goal: Compare, Method: JS State Change). This approach makes complex technical concepts digestible without using prohibited SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F5;
+            color: #212121;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .platform-toggle {
+            transition: background-color 0.3s, color 0.3s;
+            border: 2px solid transparent;
+        }
+        .platform-toggle.active {
+            background-color: #A1887F;
+            color: #FFFFFF;
+            border-color: #A1887F;
+        }
+        .platform-toggle:not(.active) {
+            background-color: #EFEBE9;
+            color: #5D4037;
+        }
+        .flow-diagram-box {
+            border: 2px solid #D7CCC8;
+            background-color: #FAFAFA;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .flow-diagram-arrow {
+            font-size: 2rem;
+            color: #A1887F;
+            line-height: 1;
+        }
+        .code-block {
+            background-color: #212121;
+            color: #F5F5F5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .animated-permission-prompt {
+            animation: fade-in-out 6s infinite;
+        }
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0; transform: translateY(10px) scale(0.95); }
+            10%, 40% { opacity: 1; transform: translateY(0) scale(1); }
+            50%, 90% { opacity: 0; transform: translateY(10px) scale(0.95); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <main class="container mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#5D4037] mb-2">WebRTC in Facebook's Browser</h1>
+            <p class="text-lg text-gray-600">An Interactive Analysis of Support & Limitations</p>
+        </header>
+
+        <!-- Section 1: The Final Verdict -->
+        <section id="verdict" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">The Definitive Answer: Is It Viable?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="card p-8 text-center flex flex-col items-center justify-center h-full">
+                    <div class="text-8xl mb-4">🚫</div>
+                    <h3 class="text-4xl font-bold text-red-700 mb-2">Not Viable</h3>
+                    <p class="text-gray-600">Reliable video conferencing within the Facebook In-App Browser is not achievable on either iOS or Android due to fundamental platform limitations and policy decisions.</p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-center rounded-lg p-1 bg-[#EFEBE9]">
+                        <button id="toggle-ios" class="platform-toggle active w-1/2 py-3 px-4 rounded-md font-semibold">iOS</button>
+                        <button id="toggle-android" class="platform-toggle w-1/2 py-3 px-4 rounded-md font-semibold">Android</button>
+                    </div>
+                    <div id="verdict-ios" class="card p-6 h-full">
+                        <h4 class="font-bold text-xl mb-2 text-[#5D4037]">Failure on iOS</h4>
+                        <p class="text-gray-700">WebRTC is crippled by Apple's `WKWebView` architecture. Critical issues include a broken permission model causing endless prompts and deep conflicts with native audio frameworks, making call handling impossible.</p>
+                    </div>
+                    <div id="verdict-android" class="card p-6 h-full hidden">
+                        <h4 class="font-bold text-xl mb-2 text-[#5D4037]">Failure on Android</h4>
+                        <p class="text-gray-700">WebRTC is blocked by Meta's policy. The custom browser engine is capable, but Meta deliberately denies camera and microphone permission requests from third-party websites, making it non-functional.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Platform Deep Dive -->
+        <section id="deep-dive" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Platform Deep Dive: The "Why"</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-10">While the outcome is the same, the reasons for failure are fundamentally different on each platform. Use the toggle above to explore the specific technical roadblocks that make WebRTC non-viable in each environment.</p>
+
+            <!-- iOS Content -->
+            <div id="content-ios">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Limitation 1: Permissions Nightmare -->
+                    <div class="card p-6">
+                        <h3 class="font-bold text-2xl mb-4 text-[#5D4037]">iOS Limitation 1: The Permissions Nightmare</h3>
+                        <p class="text-gray-700 mb-4">Unlike Safari, the Facebook browser (`WKWebView`) does not remember that a user has granted media permissions. This forces the app to ask for camera and microphone access every single time the page is loaded, creating a disruptive and untrustworthy user experience.</p>
+                        <div class="relative h-48 flex items-center justify-center bg-[#EFEBE9] rounded-lg p-4 overflow-hidden">
+                             <div class="text-center">
+                                <p class="font-semibold text-gray-800">Simulating Page Load...</p>
+                                <p class="text-sm text-gray-600">Watch the prompt reappear.</p>
+                            </div>
+                            <div class="animated-permission-prompt absolute top-0 left-0 w-full h-full flex items-center justify-center p-4">
+                                <div class="bg-white rounded-lg shadow-2xl p-5 text-center w-64">
+                                    <p class="font-semibold">"example.com" Would Like to Access the Microphone</p>
+                                    <p class="text-xs text-gray-500 mt-1 mb-3">This lets you send audio in your video call.</p>
+                                    <div class="flex justify-around mt-4">
+                                        <button class="text-sm text-blue-600">Don't Allow</button>
+                                        <button class="text-sm font-bold text-blue-600">OK</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Limitation 2: Audio/CallKit Conflict -->
+                    <div class="card p-6">
+                        <h3 class="font-bold text-2xl mb-4 text-[#5D4037]">iOS Limitation 2: Audio & CallKit Conflict</h3>
+                        <p class="text-gray-700 mb-4">The browser process is isolated from the main Facebook app. This creates two separate, conflicting audio sessions, leading to critical failures in audio control (like speakerphone) and integration with the native iOS call screen (`CallKit`).</p>
+                         <div class="w-full p-4 bg-[#EFEBE9] rounded-lg">
+                            <div class="flex flex-col space-y-4">
+                                <div class="flow-diagram-box border-blue-300 bg-blue-50">
+                                    <span class="font-bold text-blue-800">Facebook App Process</span>
+                                    <div class="mt-2 p-2 bg-white rounded shadow-inner">AVAudioSession (for CallKit)</div>
+                                </div>
+                                <div class="text-center text-red-500 font-bold text-2xl">↔️ BROKEN LINK ↔️</div>
+                                <div class="flow-diagram-box border-green-300 bg-green-50">
+                                    <span class="font-bold text-green-800">WKWebView Process (Your Website)</span>
+                                    <div class="mt-2 p-2 bg-white rounded shadow-inner">AVAudioSession (for WebRTC)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Android Content -->
+            <div id="content-android" class="hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Limitation: Policy Block -->
+                    <div class="card p-6 lg:col-span-2">
+                        <h3 class="font-bold text-2xl mb-4 text-[#5D4037]">Android Limitation: A Deliberate Policy Block</h3>
+                        <p class="text-gray-700 mb-6">On Android, the failure is not a technical bug but a policy choice. The Facebook app receives the permission request from the website but intentionally chooses to deny it without ever asking the user. This effectively creates a wall, blocking all third-party WebRTC calls.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold text-lg mb-2 text-center">Expected Permission Flow</h4>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flow-diagram-box w-full">1. Website calls getUserMedia()</div>
+                                    <div class="flow-diagram-arrow">↓</div>
+                                    <div class="flow-diagram-box w-full">2. WebView asks App for permission</div>
+                                    <div class="flow-diagram-arrow">↓</div>
+                                    <div class="flow-diagram-box w-full">3. App shows prompt to User</div>
+                                    <div class="flow-diagram-arrow">↓</div>
+                                    <div class="flow-diagram-box w-full bg-green-50 border-green-300">4. Permission Granted</div>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold text-lg mb-2 text-center">Facebook's Actual Flow</h4>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <div class="flow-diagram-box w-full">1. Website calls getUserMedia()</div>
+                                    <div class="flow-diagram-arrow">↓</div>
+                                    <div class="flow-diagram-box w-full">2. WebView asks App for permission</div>
+                                    <div class="flow-diagram-arrow text-red-500">↓</div>
+                                    <div class="flow-diagram-box w-full bg-red-50 border-red-300 flex items-center justify-center">
+                                        <span class="text-4xl mr-2">🚫</span> <strong>3. App Denies Request</strong>
+                                    </div>
+                                    <div class="flow-diagram-arrow text-red-500">↓</div>
+                                    <div class="flow-diagram-box w-full bg-red-50 border-red-300">4. Permission Denied</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Universal Solution -->
+        <section id="solution">
+            <h2 class="text-3xl font-bold text-center mb-8">The Universal Solution: Detect & Redirect</h2>
+            <div class="card p-8">
+                <p class="text-center text-gray-700 max-w-3xl mx-auto mb-8">Since running WebRTC inside the Facebook browser is not feasible, the industry-standard best practice is to detect the environment and redirect the user to their device's default system browser (like Safari or Chrome), where WebRTC works as expected.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div>
+                        <h4 class="font-bold text-xl mb-2 text-[#5D4037]">1. Detect the In-App Browser</h4>
+                        <p class="text-gray-700 mb-4">This is done by checking the browser's User-Agent string for specific tokens that Facebook adds.</p>
+                        <div class="space-y-3">
+                            <p class="font-semibold">Example iOS User-Agent:</p>
+                            <div class="code-block">Mozilla/5.0 (iPhone; CPU iPhone OS 15_1...) Mobile/19B74 <span class="bg-[#A1887F] px-1 rounded">[FBIOS/345.0.0.34.119]</span></div>
+                            <p class="font-semibold">Example Android User-Agent:</p>
+                            <div class="code-block">Mozilla/5.0 (Linux; Android 14; SM-A546U1...) Mobile Safari/537.36 <span class="bg-[#A1887F] px-1 rounded">[FB_IAB/FB4A;FBAV/445.0.0.34.118;]</span></div>
+                        </div>
+                    </div>
+                     <div>
+                        <h4 class="font-bold text-xl mb-2 text-[#5D4037]">2. Redirect the User</h4>
+                        <p class="text-gray-700 mb-4">Once detected, show the user a message and a button to open the link in their main browser.</p>
+                        <div class="flex flex-col items-center space-y-2 p-4 bg-[#EFEBE9] rounded-lg">
+                            <div class="flow-diagram-box w-full">User clicks link in Facebook</div>
+                            <div class="flow-diagram-arrow">↓</div>
+                            <div class="flow-diagram-box w-full">Your site detects the IAB</div>
+                            <div class="flow-diagram-arrow">↓</div>
+                            <div class="flow-diagram-box w-full bg-blue-50 border-blue-300">Show "Open in Browser" prompt</div>
+                            <div class="flow-diagram-arrow">↓</div>
+                            <div class="flow-diagram-box w-full bg-green-50 border-green-300">User is sent to Safari/Chrome</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-8 mt-8 border-t border-gray-200">
+        <p class="text-gray-500">This interactive application is a synthesis of the detailed report on WebRTC support in the Facebook In-App Browser.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleIos = document.getElementById('toggle-ios');
+            const toggleAndroid = document.getElementById('toggle-android');
+
+            const verdictIos = document.getElementById('verdict-ios');
+            const verdictAndroid = document.getElementById('verdict-android');
+
+            const contentIos = document.getElementById('content-ios');
+            const contentAndroid = document.getElementById('content-android');
+
+            function switchPlatform(platform) {
+                if (platform === 'ios') {
+                    // Toggle buttons
+                    toggleIos.classList.add('active');
+                    toggleAndroid.classList.remove('active');
+
+                    // Verdict cards
+                    verdictIos.classList.remove('hidden');
+                    verdictAndroid.classList.add('hidden');
+
+                    // Main content
+                    contentIos.classList.remove('hidden');
+                    contentAndroid.classList.add('hidden');
+                } else if (platform === 'android') {
+                    // Toggle buttons
+                    toggleIos.classList.remove('active');
+                    toggleAndroid.classList.add('active');
+
+                    // Verdict cards
+                    verdictIos.classList.add('hidden');
+                    verdictAndroid.classList.remove('hidden');
+
+                    // Main content
+                    contentIos.classList.add('hidden');
+                    contentAndroid.classList.remove('hidden');
+                }
+            }
+
+            toggleIos.addEventListener('click', () => switchPlatform('ios'));
+            toggleAndroid.addEventListener('click', () => switchPlatform('android'));
+
+            // Set initial state
+            switchPlatform('ios');
+        });
+    </script>
+
+</body>
+</html>
